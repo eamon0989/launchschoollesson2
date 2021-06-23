@@ -55,6 +55,10 @@ function getLoanAmount() {
     loanAmount = loanAmount.replace(/,/g, '');
   }
 
+  if (loanAmount.includes('.')) {
+    loanAmount = loanAmount.replace(/./g, '');
+  }
+
   while (isInvalidAmount(loanAmount)) {
     prompt(english.invalid);
     loanAmount = rlsync.question('$');
