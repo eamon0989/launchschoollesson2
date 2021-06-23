@@ -60,7 +60,7 @@ function getLoanAmount() {
   }
 
   if (loanAmount.includes('.')) {
-    loanAmount = loanAmount.slice(0, loanAmount.indexOf('.')) + loanAmount.slice(loanAmount.indexOf('.') + 1);
+    loanAmount = loanAmount.split('.').join('');
   }
 
   while (isInvalidAmount(loanAmount)) {
