@@ -60,7 +60,7 @@ function getLoanAmount() {
   }
 
   if (loanAmount.includes('.')) {
-    loanAmount = loanAmount.replace(/./g, '');
+    loanAmount = loanAmount.slice(0, loanAmount.indexOf('.')) + loanAmount.slice(loanAmount.indexOf('.') + 1);
   }
 
   while (isInvalidAmount(loanAmount)) {
@@ -99,6 +99,7 @@ function getLoanDuration() {
 }
 
 function isInvalidAmount(number) {
+  console.log(number);
   if (number[0] === '$') {
     number = number.slice(1, -1);
   } else if (number.trimStart() === '' || Number(number.trimStart()) < 1) {
@@ -106,6 +107,8 @@ function isInvalidAmount(number) {
   }
 
   if (Number.isNaN(Number(number))) {
+    console.log(number);
+
     return true;
   }
 
@@ -138,9 +141,9 @@ function runAgain() {
     prompt('Please enter "y" or "n".');
     answer = rlsync.question().toLowerCase();
   }
-  if (answer[0] === 'y') {
+  if (answer === 'y' || answer === 'yes') {
     getInput();
-  } else if (answer[0] === 'n') {
+  } else if (answer === 'n' || answer === 'yes') {
     return false;
   }
   answer = '';
