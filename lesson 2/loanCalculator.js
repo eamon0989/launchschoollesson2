@@ -14,9 +14,13 @@ function getInput() {
   let loanDurationMonths = loanDurationYears * 12;
   let monthlyInterestRate = (annualPercentageRate / 100) / 12;
   let monthlyInterestRatePercentage = monthlyInterestRate * 100;
-
-  let monthlyPay = loanAmount * (monthlyInterestRate /
+  let monthlyPay;
+  if (annualPercentageRate === 0) {
+    monthlyPay = loanAmount / loanDurationMonths;
+  } else {
+    monthlyPay = loanAmount * (Number(monthlyInterestRate) /
     ( 1 - Math.pow((1 + monthlyInterestRate), (-loanDurationMonths))));
+  }
 
   let totalToPay = monthlyPay * loanDurationMonths;
   let totalInterest = formatNumber(totalToPay - loanAmount);
