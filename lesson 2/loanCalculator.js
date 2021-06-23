@@ -44,9 +44,9 @@ function formatNumber(number) {
 
 function printOutput(monthlyPay, loanDurationMonths,
   totalToPay, totalInterest, monthlyInterestRatePercentage) {
-  console.log(`The monthly payment will be $${monthlyPay}.`);
-  console.log(`The total amount paid after ${loanDurationMonths.toFixed(2)} payments will be $${totalToPay}.`);
-  console.log(`The total amount paid in interest will be $${totalInterest}.`);
+  console.log(`The monthly payment will be $${monthlyPay}`);
+  console.log(`The total amount paid after ${loanDurationMonths.toFixed(2)} payments will be $${totalToPay}`);
+  console.log(`The total amount paid in interest will be $${totalInterest}`);
   console.log(`The monthly interest rate is ${monthlyInterestRatePercentage.toFixed(2)}%`);
   runAgain();
 }
@@ -56,7 +56,7 @@ function getLoanAmount() {
   let loanAmount = rlsync.question('$');
 
   if (loanAmount.includes(',')) {
-    loanAmount = loanAmount.replace(/,/g, '');
+    loanAmount = loanAmount.split(',').join('');
   }
 
   if (loanAmount.includes('.')) {
