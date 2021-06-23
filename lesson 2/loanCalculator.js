@@ -74,11 +74,13 @@ function getLoanAmount() {
 function getAnnualPercentageRate() {
   prompt(english.annualRate);
   let annualRate = rlsync.question();
-  if (annualRate[annualRate.length - 1] === '%') {
-    annualRate = annualRate.slice(0, annualRate.length - 1);
+  if (annualRate.includes('%')) {
+    annualRate = annualRate.replace(/%/g, '');
   }
-
   while (validatePercentage(annualRate)) {
+    if (annualRate.includes('%')) {
+      annualRate = annualRate.replace(/%/g, '');
+    }
     prompt(english.validPercentage);
     annualRate = rlsync.question();
   }
