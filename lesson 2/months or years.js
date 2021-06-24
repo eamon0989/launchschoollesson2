@@ -6,21 +6,16 @@ function prompt(message) {
   console.log(`=> ${message}`);
 }
 
+// getter function
 function getInput() {
   prompt('Welcome to out Mortgage Calculator');
   let loanAmount = getLoanAmount();
   let annualPercentageRate = getAnnualPercentageRate();
   let loanDurationMonths = validateMonthsOrYears();
-  // let loanDurationMonths = loanDurationYears * 12;
   let monthlyInterestRate = (annualPercentageRate / 100) / 12;
   let monthlyInterestRatePercentage = monthlyInterestRate * 100;
-  let monthlyPay;
-  if (annualPercentageRate === 0) {
-    monthlyPay = loanAmount / loanDurationMonths;
-  } else {
-    monthlyPay = loanAmount * (Number(monthlyInterestRate) /
-    ( 1 - Math.pow((1 + monthlyInterestRate), (-loanDurationMonths))));
-  }
+  let monthlyPay = calculateMonthlyPay(annualPercentageRate,
+    loanAmount, loanDurationMonths, monthlyInterestRate);
   let totalToPay = monthlyPay * loanDurationMonths;
   let totalInterest = formatNumber(totalToPay - loanAmount);
   totalToPay = formatNumber(totalToPay);
@@ -30,12 +25,26 @@ function getInput() {
     totalToPay, totalInterest, monthlyInterestRatePercentage);
 }
 
+// helper functions
+function calculateMonthlyPay(annualPercentageRate, loanAmount,
+  loanDurationMonths, monthlyInterestRate) {
+  let monthlyPay;
+  if (annualPercentageRate === 0) {
+    monthlyPay = loanAmount / loanDurationMonths;
+  } else {
+    monthlyPay = loanAmount * (Number(monthlyInterestRate) /
+    ( 1 - Math.pow((1 + monthlyInterestRate), (-loanDurationMonths))));
+  }
+  return monthlyPay;
+}
+
 function formatNumber(number) {
   number = Number(Number.parseFloat(number).toFixed(2));
   number = number.toLocaleString('en-US');
 
+  // if toLocale returns only 1 decimals place, concat 0 to the end
   if (number[number.length - 2] === '.') {
-    number += '0'; // if toLocale returns only 1 decimals place, concat 0 to the end
+    number += '0';
   }
 
   return number;
@@ -43,13 +52,16 @@ function formatNumber(number) {
 
 function printOutput(monthlyPay, loanDurationMonths,
   totalToPay, totalInterest, monthlyInterestRatePercentage) {
-  console.log(`The monthly payment will be $${monthlyPay}`);
-  console.log(`The total amount paid after ${loanDurationMonths.toFixed(2)} payments will be $${totalToPay}`);
-  console.log(`The total amount paid in interest will be $${totalInterest}`);
-  console.log(`The monthly interest rate is ${monthlyInterestRatePercentage.toFixed(2)}%`);
+  prompt(`The monthly payment will be $${monthlyPay}`);
+  prompt(`The total amount paid after ${loanDurationMonths.toFixed(2)} \
+payments will be $${totalToPay}`);
+  prompt(`The total amount paid in interest will be $${totalInterest}`);
+  prompt(`The monthly interest rate is \
+${monthlyInterestRatePercentage.toFixed(2)}%`);
   runAgain();
 }
 
+// helper getter functions
 function getLoanAmount() {
   prompt(english.amount);
   let loanAmount = rlsync.question('$');
@@ -87,6 +99,28 @@ function getAnnualPercentageRate() {
   return Number(annualRate);
 }
 
+function getLoanDuration(type, duration = '') {
+  do {
+    if (type === 'years' || type[0] === 'y') {
+      prompt("Over how many years do you intend to pay the loan? ");
+      duration = rlsync.question() * 12;
+    } else if (type === "months" || type[0] === 'm') {
+      prompt("Over how many months do you intend to pay the loan? ");
+      duration = rlsync.question();
+    } else if (type === "both" || type[0] === 'y') {
+      prompt("Please answer with years first, then months");
+      prompt(`Example: "10, 5" would be 10 years, 5 months`);
+      duration = rlsync.question();
+      duration = duration.split(',').map((element) => parseInt(element, 10));
+      duration = (duration[0] * 12) + duration[1];
+    } else {
+      prompt("sorry I didn't understand your answer, try again");
+    }
+  } while (isInvalidTime(duration));
+  return Number(duration);
+}
+
+// input validation functions
 function isInvalidAmount(number) {
   if (number[0] === '$') {
     number = number.slice(1, -1);
@@ -102,31 +136,13 @@ function isInvalidAmount(number) {
 }
 
 function validatePercentage(number) {
-  if (number === '' || Number(number.trimStart()) < 0 || Number.isNaN(Number(number))) {
+  if (number === '' || Number(number.trimStart()) < 0 ||
+  Number.isNaN(Number(number))) {
     return true;
   }
 
   return false;
 }
-
-function runAgain() {
-  prompt("Would you like to calculate another mortgage? ");
-  prompt('Please enter "y" or "n".');
-  let answer = rlsync.question().toLowerCase();
-  while (answer[0] !== 'y' && answer[0] !== 'n') {
-    prompt('Please enter "y" or "n".');
-    answer = rlsync.question().toLowerCase();
-  }
-  if (answer === 'y' || answer === 'yes') {
-    getInput();
-  } else if (answer === 'n' || answer === 'yes') {
-    return false;
-  }
-  answer = '';
-  return answer;
-}
-
-getInput();
 
 function validateMonthsOrYears() {
   prompt("Would you like to calculate using years, months or both? ");
@@ -147,28 +163,6 @@ function invalidType(type) {
   return false;
 }
 
-function getLoanDuration(type) {
-  let months;
-  do {
-    if (type === 'years' || type[0] === 'y') {
-      prompt("Over how many years do you intend to pay the loan? ");
-      months = rlsync.question() * 12;
-    } else if (type === "months" || type[0] === 'm') {
-      prompt("Over how many months do you intend to pay the loan? ");
-      months = rlsync.question();
-    } else if (type === "both" || type[0] === 'y') {
-      prompt("Please answer with years first, then months");
-      prompt(`Example: "10, 5" would be 10 years, 5 months`);
-      months = rlsync.question();
-      months = months.split(',').map((element) => parseInt(element));
-      months = (months[0] * 12) + months[1];
-    } else {
-      prompt("sorry I didn't understand your answer, try again");
-    }
-  } while (isInvalidTime(months));
-  return Number(months);
-}
-
 function isInvalidTime(number) {
   number = String(number);
   if (number.trimStart() === '' || Number.isNaN(Number(number))) {
@@ -180,4 +174,22 @@ function isInvalidTime(number) {
   return false;
 }
 
-console.log(validateMonthsOrYears())
+// restart funtion
+function runAgain() {
+  prompt("Would you like to calculate another mortgage? ");
+  prompt('Please enter "y" or "n".');
+  let answer = rlsync.question().toLowerCase();
+  while (answer[0] !== 'y' && answer[0] !== 'n') {
+    prompt('Please enter "y" or "n".');
+    answer = rlsync.question().toLowerCase();
+  }
+  if (answer === 'y' || answer === 'yes') {
+    getInput();
+  } else if (answer === 'n' || answer === 'yes') {
+    return false;
+  }
+  answer = '';
+  return answer;
+}
+
+getInput();

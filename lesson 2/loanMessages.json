@@ -5,6 +5,7 @@
     "howManyYears" : "Over how many years do you intend to pay the loan? ",
     "invalid" : "That is not a valid amount, please enter a valid amount ",
     "validPercentage" : "Please enter a positive interest rate ",
-    "validTerm" : "Please enter a positive loan term value "
+    "validTerm" : "Please enter a positive loan term value ",
+    "monthlyPay" : "The monthly payment will be $${monthlyPay}"
   }
 }
