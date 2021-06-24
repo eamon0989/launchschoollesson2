@@ -1,17 +1,17 @@
 let rlsync = require('readline-sync');
-const MESSAGES = require('./loanMessages.json');
-let english = MESSAGES.en;
+// const MESSAGES = require('./loanMessages.json');
+// let english = MESSAGES.en;
 
 function prompt(message) {
   console.log(`=> ${message}`);
 }
 
+prompt('Welcome to our Mortgage Calculator');
+
 function getInput() {
-  prompt('Welcome to out Mortgage Calculator');
   let loanAmount = getLoanAmount();
   let annualPercentageRate = getAnnualPercentageRate();
   let loanDurationMonths = validateMonthsOrYears();
-  // let loanDurationMonths = loanDurationYears * 12;
   let monthlyInterestRate = (annualPercentageRate / 100) / 12;
   let monthlyInterestRatePercentage = monthlyInterestRate * 100;
   let monthlyPay;
@@ -30,6 +30,7 @@ function getInput() {
     totalToPay, totalInterest, monthlyInterestRatePercentage);
 }
 
+// Returns an easily readable number to the user
 function formatNumber(number) {
   number = Number(Number.parseFloat(number).toFixed(2));
   number = number.toLocaleString('en-US');
@@ -43,35 +44,78 @@ function formatNumber(number) {
 
 function printOutput(monthlyPay, loanDurationMonths,
   totalToPay, totalInterest, monthlyInterestRatePercentage) {
-  console.log(`The monthly payment will be $${monthlyPay}`);
-  console.log(`The total amount paid after ${loanDurationMonths.toFixed(2)} payments will be $${totalToPay}`);
-  console.log(`The total amount paid in interest will be $${totalInterest}`);
-  console.log(`The monthly interest rate is ${monthlyInterestRatePercentage.toFixed(2)}%`);
+  prompt(`The monthly payment will be $${monthlyPay}`);
+  prompt(`The total amount paid after ${Math.round(loanDurationMonths)} \
+payments will be $${totalToPay}`);
+  prompt(`The total amount paid in interest will be $${totalInterest}`);
+  prompt(`The monthly interest rate is \
+${monthlyInterestRatePercentage.toFixed(2)}%`);
   runAgain();
 }
 
 function getLoanAmount() {
-  prompt(english.amount);
+  let [originalAmount, loanAmount] = askForLoanAmount();
+
+  // if the formated number is not the same as the original, verify with user
+  if (loanAmount !== 0 && formatNumber(loanAmount) !== originalAmount) {
+    while (didYouMean(loanAmount)) {
+      [originalAmount, loanAmount] = askForLoanAmount();
+    }
+  }
+  return loanAmount;
+}
+
+function askForLoanAmount() {
+  prompt(`How much would you like to borrow? `);
   let loanAmount = rlsync.question('$');
+  let originalAmount = loanAmount;
 
-  if (loanAmount.includes(',')) {
-    loanAmount = loanAmount.split(',').join('');
-  }
-
-  if (loanAmount.includes('.')) {
-    loanAmount = loanAmount.split('.').join('');
-  }
+  loanAmount = fixInputFormatting(loanAmount);
 
   while (isInvalidAmount(loanAmount)) {
-    prompt(english.invalid);
-    loanAmount = rlsync.question('$');
+    prompt(`That is not a valid amount, please enter a valid amount `);
+    loanAmount = fixInputFormatting(rlsync.question('$'));
+  }
+  return [originalAmount, loanAmount];
+}
+
+function didYouMean(loanAmount) {
+  prompt(`Did you mean to enter $${formatNumber(loanAmount)}? Type y/n`);
+  let meant = rlsync.question();
+  while (meant[0] !== 'y' && meant[0] !== 'n') {
+    prompt(`I don't understand`);
+    prompt(`Did you mean to enter $${formatNumber(loanAmount)}? Type y/n`);
+    meant = rlsync.question();
+  }
+  if (meant[0] === 'n') {
+    return true;
+  } else if (meant[0] === 'y') {
+    return false;
+  }
+  return false;
+}
+
+// filters out non number characters from loan amount
+function fixInputFormatting(loanAmount) {
+  let numbers = '0123456789';
+  const regex = new RegExp(/\D/);
+
+  if (loanAmount[loanAmount.length - 2] === '.') {
+    loanAmount += '0';
   }
 
-  return Number(loanAmount);
+  if (regex.test(loanAmount)) {
+    loanAmount = loanAmount.split('');
+    let filteredArray = loanAmount.filter((element, index) =>
+      (element === '.' && index === (loanAmount.length - 3)) ||
+      (numbers.includes(element)));
+    loanAmount = filteredArray.join('');
+  }
+  return loanAmount;
 }
 
 function getAnnualPercentageRate() {
-  prompt(english.annualRate);
+  prompt(`What is the Annual Percentage Rate? Example: 5 for 5% or 2.5 for 2.5%`);
   let annualRate = rlsync.question();
   if (annualRate.includes('%')) {
     annualRate = annualRate.replace(/%/g, '');
@@ -80,7 +124,7 @@ function getAnnualPercentageRate() {
     if (annualRate.includes('%')) {
       annualRate = annualRate.replace(/%/g, '');
     }
-    prompt(english.validPercentage);
+    prompt(`Please enter a positive interest rate `);
     annualRate = rlsync.question();
   }
 
@@ -109,6 +153,76 @@ function validatePercentage(number) {
   return false;
 }
 
+function validateMonthsOrYears() {
+  prompt("Would you like to calculate using years, months or both? ");
+  let type = rlsync.question();
+  while (invalidType(type)) {
+    prompt(`Type "years", "months" or "both"`);
+    type = rlsync.question();
+  }
+  return getLoanDuration(type);
+}
+
+function invalidType(type) {
+  if (type !== 'years' && type !== 'months' && type !== 'both'
+  && type[0] !== 'y' && type[0] !== 'm' && type[0] !== 'b') {
+    return true;
+  }
+  return false;
+}
+
+function getLoanDuration(type, months) {
+  do {
+    if (type === 'years' || type[0] === 'y') {
+      prompt("Over how many years do you intend to pay the loan? ");
+      months = rlsync.question();
+    } else if (type === "months" || type[0] === 'm') {
+      prompt("Over how many months do you intend to pay the loan? ");
+      months = rlsync.question();
+    } else if (type === "both" || type[0] === 'b') {
+      prompt('Please enter 2 whole numbers, separated by a comma');
+      prompt(`Example: "10, 5" would be 10 years, 5 months`);
+      months = rlsync.question();
+    } else {
+      prompt("sorry I didn't understand your answer, try again");
+    }
+  } while (isInvalidTime(type, months));
+  return Number(monthCalculator(type, months));
+}
+
+function monthCalculator(type, months) {
+  if (type[0] === 'y') {
+    months *= 12;
+  } else if (type[0] === 'b') {
+    months = months.split(',').map((element) => parseInt(element, 10));
+    months = (months[0] * 12) + months[1];
+  }
+  return months;
+}
+
+function isInvalidTime(type, number) {
+  number = String(number);
+  if (type[0] === 'b' && (number.includes('.') || !number.includes(','))) {
+    return true;
+  } else if (Number(number.trimStart()) <= 0 ||
+    Number.isNaN(Number(number.split(',').map((element) => parseInt(element, 10)).join(''))) ||
+     number.split(',')[0] <= 0 || number.split(',')[1] <= 0) {
+    prompt('Please enter a number greater than 0');
+    return true;
+  }
+
+  if (type[0] !== 'b') {
+    if (number.trimStart() === '' || Number.isNaN(Number(number))) {
+      return true;
+    } else if (number.includes('.')) {
+      prompt('Please enter a whole number: ');
+      return true;
+    }
+  }
+
+  return false;
+}
+
 function runAgain() {
   prompt("Would you like to calculate another mortgage? ");
   prompt('Please enter "y" or "n".');
@@ -127,57 +241,3 @@ function runAgain() {
 }
 
 getInput();
-
-function validateMonthsOrYears() {
-  prompt("Would you like to calculate using years, months or both? ");
-  let type = rlsync.question();
-  while (invalidType(type)) {
-    prompt(`Type "years", "months" or "both"`);
-    type = rlsync.question();
-  }
-  return getLoanDuration(type);
-}
-
-function invalidType(type) {
-  if (type !== 'years' && type !== 'months' && type !== 'both'
-  && type[0] !== 'y' && type[0] !== 'm' && type[0] !== 'b') {
-    console.log('conditon not met');
-    return true;
-  }
-  return false;
-}
-
-function getLoanDuration(type) {
-  let months;
-  do {
-    if (type === 'years' || type[0] === 'y') {
-      prompt("Over how many years do you intend to pay the loan? ");
-      months = rlsync.question() * 12;
-    } else if (type === "months" || type[0] === 'm') {
-      prompt("Over how many months do you intend to pay the loan? ");
-      months = rlsync.question();
-    } else if (type === "both" || type[0] === 'y') {
-      prompt("Please answer with years first, then months");
-      prompt(`Example: "10, 5" would be 10 years, 5 months`);
-      months = rlsync.question();
-      months = months.split(',').map((element) => parseInt(element));
-      months = (months[0] * 12) + months[1];
-    } else {
-      prompt("sorry I didn't understand your answer, try again");
-    }
-  } while (isInvalidTime(months));
-  return Number(months);
-}
-
-function isInvalidTime(number) {
-  number = String(number);
-  if (number.trimStart() === '' || Number.isNaN(Number(number))) {
-    return true;
-  } else if (Number(number.trimStart()) <= 0) {
-    return true;
-  }
-
-  return false;
-}
-
-console.log(validateMonthsOrYears())
