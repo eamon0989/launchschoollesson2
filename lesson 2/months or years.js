@@ -11,7 +11,7 @@ function getInput() {
   prompt('Welcome to out Mortgage Calculator');
   let loanAmount = getLoanAmount();
   let annualPercentageRate = getAnnualPercentageRate();
-  let loanDurationMonths = validateMonthsOrYears();
+  let loanDurationMonths = getDuration();
   let monthlyInterestRate = (annualPercentageRate / 100) / 12;
   let monthlyInterestRatePercentage = monthlyInterestRate * 100;
   let monthlyPay = calculateMonthlyPay(annualPercentageRate,
@@ -99,6 +99,7 @@ function getAnnualPercentageRate() {
   return Number(annualRate);
 }
 
+// separated in two as there is a lot of validation going on
 function getLoanDuration(type, duration = '') {
   do {
     if (type === 'years' || type[0] === 'y') {
@@ -118,6 +119,16 @@ function getLoanDuration(type, duration = '') {
     }
   } while (isInvalidTime(duration));
   return Number(duration);
+}
+
+function getDuration() {
+  prompt("Would you like to calculate using years, months or both? ");
+  let type = rlsync.question();
+  while (invalidType(type)) {
+    prompt(`Type "years", "months" or "both"`);
+    type = rlsync.question();
+  }
+  return getLoanDuration(type);
 }
 
 // input validation functions
@@ -142,16 +153,6 @@ function validatePercentage(number) {
   }
 
   return false;
-}
-
-function validateMonthsOrYears() {
-  prompt("Would you like to calculate using years, months or both? ");
-  let type = rlsync.question();
-  while (invalidType(type)) {
-    prompt(`Type "years", "months" or "both"`);
-    type = rlsync.question();
-  }
-  return getLoanDuration(type);
 }
 
 function invalidType(type) {
