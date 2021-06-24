@@ -1,6 +1,4 @@
 let rlsync = require('readline-sync');
-// const MESSAGES = require('./loanMessages.json');
-// let english = MESSAGES.en;
 
 function prompt(message) {
   console.log(`=> ${message}`);
