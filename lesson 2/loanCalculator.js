@@ -10,7 +10,7 @@ prompt('Welcome to our Mortgage Calculator');
 function getInput() {
   let loanAmount = getLoanAmount();
   let annualPercentageRate = getAnnualPercentageRate();
-  let loanDurationMonths = validateMonthsOrYears();
+  let loanDurationMonths = getDuration();
   let monthlyInterestRate = (annualPercentageRate / 100) / 12;
   let monthlyInterestRatePercentage = monthlyInterestRate * 100;
   let monthlyPay = calculateMonthlyPay(annualPercentageRate,
@@ -51,23 +51,43 @@ function askForLoanAmount() {
   return [originalAmount, loanAmount];
 }
 
-function getLoanDuration(type, months) {
+function getDuration() {
+  prompt("Would you like to calculate using years, months or both? ");
+  let type = rlsync.question();
+  while (invalidType(type)) {
+    prompt(`Type "years", "months" or "both"`);
+    type = rlsync.question();
+  }
+  return getLoanDuration(type);
+}
+
+function getLoanDuration(type, duration) {
   do {
     if (type === 'years' || type[0] === 'y') {
       prompt("Over how many years do you intend to pay the loan? ");
-      months = rlsync.question();
+      duration = rlsync.question();
     } else if (type === "months" || type[0] === 'm') {
       prompt("Over how many months do you intend to pay the loan? ");
-      months = rlsync.question();
+      duration = rlsync.question();
     } else if (type === "both" || type[0] === 'b') {
       prompt('Please enter 2 whole numbers, separated by a comma');
       prompt(`Example: "10, 5" would be 10 years, 5 months`);
-      months = rlsync.question();
+      duration = rlsync.question();
     } else {
       prompt("sorry I didn't understand your answer, try again");
     }
-  } while (isInvalidTime(type, months));
-  return Number(monthCalculator(type, months));
+  } while (isInvalidTime(type, duration));
+  return Number(monthCalculator(type, duration));
+}
+
+function monthCalculator(type, months) {
+  if (type[0] === 'y') {
+    months *= 12;
+  } else if (type[0] === 'b') {
+    months = months.split(',').map((element) => parseInt(element, 10));
+    months = (months[0] * 12) + months[1];
+  }
+  return months;
 }
 
 function getAnnualPercentageRate() {
@@ -147,32 +167,12 @@ function fixInputFormatting(loanAmount) {
   return loanAmount;
 }
 
-function validateMonthsOrYears() {
-  prompt("Would you like to calculate using years, months or both? ");
-  let type = rlsync.question();
-  while (invalidType(type)) {
-    prompt(`Type "years", "months" or "both"`);
-    type = rlsync.question();
-  }
-  return getLoanDuration(type);
-}
-
 function invalidType(type) {
   if (type !== 'years' && type !== 'months' && type !== 'both'
   && type[0] !== 'y' && type[0] !== 'm' && type[0] !== 'b') {
     return true;
   }
   return false;
-}
-
-function monthCalculator(type, months) {
-  if (type[0] === 'y') {
-    months *= 12;
-  } else if (type[0] === 'b') {
-    months = months.split(',').map((element) => parseInt(element, 10));
-    months = (months[0] * 12) + months[1];
-  }
-  return months;
 }
 
 function isInvalidTime(type, number) {
