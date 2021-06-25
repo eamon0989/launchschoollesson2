@@ -42,11 +42,11 @@ function askForLoanAmount() {
   let loanAmount = rlsync.question('$');
   let originalAmount = loanAmount;
 
-  loanAmount = fixInputFormatting(loanAmount);
+  loanAmount = filterNonNumbers(loanAmount);
 
   while (isInvalidAmount(loanAmount)) {
     prompt(`That is not a valid amount, please enter a valid amount `);
-    loanAmount = fixInputFormatting(rlsync.question('$'));
+    loanAmount = filterNonNumbers(rlsync.question('$'));
   }
   return [originalAmount, loanAmount];
 }
@@ -63,13 +63,13 @@ function getDuration() {
 
 function getLoanDuration(type, duration) {
   do {
-    if (type === 'years' || type[0] === 'y') {
+    if (type === 'years' || type === 'y') {
       prompt("Over how many years do you intend to pay the loan? ");
       duration = rlsync.question();
-    } else if (type === "months" || type[0] === 'm') {
+    } else if (type === "months" || type === 'm') {
       prompt("Over how many months do you intend to pay the loan? ");
       duration = rlsync.question();
-    } else if (type === "both" || type[0] === 'b') {
+    } else if (type === "both" || type === 'b') {
       prompt('Please enter 2 whole numbers, separated by a comma');
       prompt(`Example: "10, 5" would be 10 years, 5 months`);
       duration = rlsync.question();
@@ -81,9 +81,9 @@ function getLoanDuration(type, duration) {
 }
 
 function monthCalculator(type, months) {
-  if (type[0] === 'y') {
+  if (type === 'years' || type === 'y') {
     months *= 12;
-  } else if (type[0] === 'b') {
+  } else if (type === "both" || type === 'b') {
     months = months.split(',').map((element) => parseInt(element, 10));
     months = (months[0] * 12) + months[1];
   }
@@ -135,21 +135,21 @@ function validatePercentage(number) {
 function didYouMean(loanAmount) {
   prompt(`Did you mean to enter $${formatNumber(loanAmount)}? Type y/n`);
   let meant = rlsync.question();
-  while (meant[0] !== 'y' && meant[0] !== 'n') {
+  while (meant !== 'y' && meant !== 'n' && meant !== 'no' &&
+    meant !== 'yes') {
     prompt(`I don't understand`);
     prompt(`Did you mean to enter $${formatNumber(loanAmount)}? Type y/n`);
     meant = rlsync.question();
   }
-  if (meant[0] === 'n') {
+  if (meant === 'n' || meant === 'no') {
     return true;
-  } else if (meant[0] === 'y') {
+  } else if (meant === 'y' || meant === 'yes') {
     return false;
   }
   return false;
 }
 
-// filters out non number characters from loan amount
-function fixInputFormatting(loanAmount) {
+function filterNonNumbers(loanAmount) {
   let numbers = '0123456789';
   const regex = new RegExp(/\D/);
 
@@ -169,7 +169,7 @@ function fixInputFormatting(loanAmount) {
 
 function invalidType(type) {
   if (type !== 'years' && type !== 'months' && type !== 'both'
-  && type[0] !== 'y' && type[0] !== 'm' && type[0] !== 'b') {
+  && type !== 'y' && type !== 'm' && type !== 'b') {
     return true;
   }
   return false;
@@ -177,16 +177,14 @@ function invalidType(type) {
 
 function isInvalidTime(type, number) {
   number = String(number);
-  if (type[0] === 'b' && (number.includes('.') || !number.includes(','))) {
+  if ((type === 'both' || type === 'b') && ((number.includes('.') || !number.includes(',')))) {
     return true;
-  } else if (Number(number.trimStart()) <= 0 ||
-    Number.isNaN(Number(number.split(',').map((element) => parseInt(element, 10
-    )).join(''))) || number.split(',')[0] <= 0 || number.split(',')[1] <= 0) {
+  } else if (isValidMonthOrYear(number)) {
     prompt('Please enter a number greater than 0');
     return true;
   }
 
-  if (type[0] !== 'b') {
+  if (type !== 'both' && type !== 'b') {
     if (number.trimStart() === '' || Number.isNaN(Number(number))) {
       return true;
     } else if (number.includes('.')) {
@@ -198,6 +196,15 @@ function isInvalidTime(type, number) {
   return false;
 }
 
+function isValidMonthOrYear(number) {
+  if (Number(number.trimStart()) <= 0 ||
+    Number.isNaN(Number(number.split(',').map((element) => parseInt(element, 10
+    )).join(''))) || number.split(',')[0] <= 0 ||
+    number.split(',')[1] <= 0) {
+    return true;
+  }
+  return false;
+}
 // helper functions
 function calculateMonthlyPay(annualPercentageRate, loanAmount,
   loanDurationMonths, monthlyInterestRate) {
@@ -240,13 +247,13 @@ function runAgain() {
   prompt("Would you like to calculate another mortgage? ");
   prompt('Please enter "y" or "n".');
   let answer = rlsync.question().toLowerCase();
-  while (answer[0] !== 'y' && answer[0] !== 'n') {
+  while (answer !== 'y' && answer !== 'n') {
     prompt('Please enter "y" or "n".');
     answer = rlsync.question().toLowerCase();
   }
   if (answer === 'y' || answer === 'yes') {
     getInput();
-  } else if (answer === 'n' || answer === 'yes') {
+  } else if (answer === 'n' || answer === 'no') {
     return false;
   }
   answer = '';
