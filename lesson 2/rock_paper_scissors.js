@@ -1,6 +1,7 @@
 const readline = require('readline-sync');
 const VALID_CHOICES = ['rock', 'paper', 'scissors', 'lizard', 'spock'];
 const GAME_SCORE = [['user', 0], ['computer', 0]];
+
 const WINNING_COMBOS = {
   rock:     ['scissors', 'lizard'],
   paper:    ['rock',     'spock'],
@@ -15,6 +16,8 @@ const SHORT_ANSWERS = {
   l:  'lizard',
   sp: 'spock',
 };
+const YES = ['yes', 'y'];
+const NO = ['no', 'n'];
 let printCounter = 1;
 
 function prompt(message) {
@@ -173,8 +176,7 @@ function askToPlayAgain(winnersName) {
     prompt(`They seem to be daring you to play again... (y/n)`);
     answer = readline.question();
   }
-  while (answer !== 'y' && answer !== 'yes' &&
-  answer !== 'n' && answer !== 'no') {
+  while (!YES.includes(answer) && !NO.includes(answer)) {
     prompt(`Sorry, I don't understand you. Type 'y' or 'n'.`);
     answer = readline.question();
   }
@@ -182,9 +184,9 @@ function askToPlayAgain(winnersName) {
 }
 
 function verifyYesOrNo(answer, winnersName) {
-  if (answer === 'y' || answer === 'yes') {
+  if (YES.includes(answer)) {
     resetGame();
-  } else if (answer === 'n' || answer === 'no') {
+  } else if (NO.includes(answer)) {
     if (winnersName !== 'user') {
       prompt(`I would have given up too...`);
     }

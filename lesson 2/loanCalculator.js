@@ -197,14 +197,19 @@ function isInvalidTime(type, number) {
 }
 
 function isValidMonthOrYear(number) {
+  let [years, months] = number.split(',');
+  let stringDigits = number.split(',').map((element) =>
+    parseInt(element, 10)).join('');
+
   if (Number(number.trimStart()) <= 0 ||
-    Number.isNaN(Number(number.split(',').map((element) => parseInt(element, 10
-    )).join(''))) || number.split(',')[0] <= 0 ||
-    number.split(',')[1] <= 0) {
+      Number.isNaN(Number(stringDigits)) ||
+      years <= 0 ||
+      months <= 0) {
     return true;
   }
   return false;
 }
+
 // helper functions
 function calculateMonthlyPay(annualPercentageRate, loanAmount,
   loanDurationMonths, monthlyInterestRate) {
