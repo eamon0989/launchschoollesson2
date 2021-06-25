@@ -1,6 +1,21 @@
 const readline = require('readline-sync');
 const VALID_CHOICES = ['rock', 'paper', 'scissors', 'lizard', 'spock'];
-const gameScore = [['user', 0], ['computer', 0]];
+const GAME_SCORE = [['user', 0], ['computer', 0]];
+const WINNING_COMBOS = {
+  rock:     ['scissors', 'lizard'],
+  paper:    ['rock',     'spock'],
+  scissors: ['paper',    'lizard'],
+  lizard:   ['paper',    'spock'],
+  spock:    ['rock',     'scissors'],
+};
+const SHORT_ANSWERS = {
+  r:  'rock',
+  p:  'paper',
+  sc: 'scissors',
+  l:  'lizard',
+  sp: 'spock',
+};
+let printCounter = 1;
 
 function prompt(message) {
   console.log(`=> ${message}`);
@@ -15,24 +30,56 @@ function startGame() {
 }
 
 function gameFunctions() {
+  let winnersName;
   while (isTheGameOver() !== true) {
     let choice = getUserChoice();
     let computerChoice = getComputersChoice();
     let roundWinner = declareRoundWinner(choice, computerChoice);
-    keepScore(roundWinner);
-    checkIfThereIsAWinner(gameScore);
+    updateScore(roundWinner);
+
+    if (checkIfThereIsAWinner(GAME_SCORE)) {
+      winnersName = checkIfThereIsAWinner(GAME_SCORE);
+      declareGameWinner(winnersName);
+    }
   }
+  askToPlayAgain(winnersName);
 }
 
 function getUserChoice() {
   prompt(`Choose one: ${VALID_CHOICES.join(', ')}`);
   let choice = readline.question();
+  choice = validateUserChoice(choice);
+  return choice;
+}
+
+function validateUserChoice(choice) {
+  if (checkForS(choice)) {
+    prompt('Type "sc" for scissors or "sp" for spock');
+    choice = readline.question();
+  }
+
+  choice = shortAnswerToLong(choice);
 
   while (!VALID_CHOICES.includes(choice)) {
     prompt("That's not a valid choice");
     choice = readline.question();
+    choice = shortAnswerToLong(choice);
   }
   return choice;
+}
+
+function shortAnswerToLong(choice) {
+  if (SHORT_ANSWERS[choice]) {
+    choice = SHORT_ANSWERS[choice];
+  }
+  return choice;
+}
+
+function checkForS(choice) {
+  if (choice === 's') {
+    return true;
+  }
+  return false;
 }
 
 function getComputersChoice() {
@@ -44,56 +91,61 @@ function getComputersChoice() {
 function declareRoundWinner(choice, computerChoice) {
   prompt(`You chose ${choice}, computer chose ${computerChoice}`);
   if (checkIfUserWinsRound(choice, computerChoice)) {
-    prompt('You win this round!');
+    if (GAME_SCORE[0][1] < 3) {
+      prompt('You win this round!');
+    }
     return 'user';
   } else if (checkIfComputerWinsRound(choice, computerChoice)) {
-    prompt('Computer wins this round!');
+    if (GAME_SCORE[1][1] < 3) {
+      prompt('Computer wins this round!');
+    }
     return 'computer';
   } else {
     prompt("It's a tie!");
+    if (GAME_SCORE[0][1] === 2 && GAME_SCORE[1][1] === 2) {
+      prompt(`That was a close one, I'm sweating!`);
+    }
     return 'tie';
   }
 }
 
 function checkIfUserWinsRound(choice, computerChoice) {
-  if ((choice === 'rock' && (computerChoice === 'scissors' || computerChoice === 'lizard')) ||
-      (choice === 'paper' && (computerChoice === 'rock' || computerChoice === 'spock')) ||
-      (choice === 'lizard' && (computerChoice === 'paper' || computerChoice === 'spock')) ||
-      (choice === 'spock' && (computerChoice === 'scissors' || computerChoice === 'rock')) ||
-      (choice === 'scissors' && (computerChoice === 'lizard' || computerChoice === 'paper'))) {
-    return true;
-  }
-  return false;
+  return WINNING_COMBOS[choice].includes(computerChoice);
 }
 
 function checkIfComputerWinsRound(choice, computerChoice) {
-  if ((choice === 'rock' && (computerChoice === 'paper' || computerChoice === 'spock')) ||
-      (choice === 'paper' && (computerChoice === 'scissors' || computerChoice === 'lizard')) ||
-      (choice === 'scissors' && (computerChoice === 'rock' || computerChoice === 'spock')) ||
-      (choice === 'lizard' && (computerChoice === 'scissors' || computerChoice === 'rock')) ||
-      (choice === 'spock' && (computerChoice === 'lizard' || computerChoice === 'paper'))) {
-    return true;
-  }
-  return false;
+  return WINNING_COMBOS[computerChoice].includes(choice);
 }
 
-function keepScore(roundWinner) {
+function updateScore(roundWinner) {
   if (roundWinner === 'user') {
-    gameScore[0][1] += 1;
+    GAME_SCORE[0][1] += 1;
   } else if (roundWinner === 'computer') {
-    gameScore[1][1] += 1;
+    GAME_SCORE[1][1] += 1;
   }
-  gameScore.forEach(element => checkIfThereIsAWinner(element));
+  printScore();
+}
+
+function printScore() {
+  let humanScore = GAME_SCORE[0][1];
+  let computerScore = GAME_SCORE[1][1];
+  if (humanScore === 2 && computerScore < humanScore && printCounter > 0) {
+    prompt(`You've almost got this!`);
+    printCounter -= 1;
+  } else if (computerScore === 2 && computerScore > humanScore &&
+      printCounter > 0) {
+    prompt(`Oh no, be careful or humanity is dooooomed!`);
+    printCounter -= 1;
+  }
+  prompt(`Human: ${humanScore}, Machine: ${computerScore}`);
 }
 
 function checkIfThereIsAWinner(gameScore) {
-  let winnersScore = gameScore[1];
-  let winnersName = gameScore[0];
-  if (winnersScore === 3) {
-    declareGameWinner(winnersName);
-    return false;
+  let winner = gameScore.filter(subArray => subArray[1] === 3);
+  if (winner.length > 0) {
+    return winner[0][0];
   }
-  return true;
+  return false;
 }
 
 function declareGameWinner(winnersName) {
@@ -105,12 +157,47 @@ function declareGameWinner(winnersName) {
 }
 
 function isTheGameOver() {
-  if (gameScore[0][1] === 3 || gameScore[1][1] === 3) {
+  if (GAME_SCORE[0][1] === 3 || GAME_SCORE[1][1] === 3) {
     return true;
   }
   return false;
 }
 
+function askToPlayAgain(winnersName) {
+  let answer;
+  if (winnersName === 'user') {
+    prompt('Would you like to play again? The machines are on the run (y/n)');
+    answer = readline.question();
+  } else {
+    prompt(`The machines look at you mockingly...`);
+    prompt(`They seem to be daring you to play again... (y/n)`);
+    answer = readline.question();
+  }
+  while (answer !== 'y' && answer !== 'yes' &&
+  answer !== 'n' && answer !== 'no') {
+    prompt(`Sorry, I don't understand you. Type 'y' or 'n'.`);
+    answer = readline.question();
+  }
+  verifyYesOrNo(answer, winnersName);
+}
 
+function verifyYesOrNo(answer, winnersName) {
+  if (answer === 'y' || answer === 'yes') {
+    resetGame();
+  } else if (answer === 'n' || answer === 'no') {
+    if (winnersName !== 'user') {
+      prompt(`I would have given up too...`);
+    }
+    return false;
+  }
+  return false;
+}
+
+function resetGame() {
+  GAME_SCORE[0][1] = 0;
+  GAME_SCORE[1][1] = 0;
+  printCounter = 0;
+  gameFunctions();
+}
 
 startGame();
