@@ -25,6 +25,7 @@ function prompt(message) {
 }
 
 function startGame() {
+  console.clear();
   prompt(`The machine uprising has begun...`);
   prompt(`You are humanity's last hope...`);
   prompt(`You have one chance to beat the machine to 3...`);
@@ -47,6 +48,10 @@ function gameFunctions() {
   }
   askToPlayAgain(winnersName);
 }
+
+// function clearConsole() {
+//   if 
+// }
 
 function getUserChoice() {
   prompt(`Choose one: ${VALID_CHOICES.join(', ')}`);
@@ -92,6 +97,7 @@ function getComputersChoice() {
 }
 
 function declareRoundWinner(choice, computerChoice) {
+  console.clear();
   prompt(`You chose ${choice}, computer chose ${computerChoice}`);
   if (checkIfUserWinsRound(choice, computerChoice)) {
     if (GAME_SCORE[0][1] < 3) {
@@ -199,6 +205,7 @@ function resetGame() {
   GAME_SCORE[0][1] = 0;
   GAME_SCORE[1][1] = 0;
   printCounter = 0;
+  console.clear();
   gameFunctions();
 }
 
