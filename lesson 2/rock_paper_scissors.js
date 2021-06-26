@@ -1,7 +1,11 @@
 const readline = require('readline-sync');
 const VALID_CHOICES = ['rock', 'paper', 'scissors', 'lizard', 'spock'];
-const GAME_SCORE = [['user', 0], ['computer', 0]];
-
+// const GAME_SCORE = [['user', 0], ['computer', 0]];
+const WINNING_SCORE = 3;
+const GAME_SCORE = {
+  user: 0,
+  computer: 0
+};
 const WINNING_COMBOS = {
   rock:     ['scissors', 'lizard'],
   paper:    ['rock',     'spock'],
@@ -38,6 +42,7 @@ function gameFunctions() {
   while (isTheGameOver() !== true) {
     let choice = getUserChoice();
     let computerChoice = getComputersChoice();
+    console.clear();
     let roundWinner = declareRoundWinner(choice, computerChoice);
     updateScore(roundWinner);
 
@@ -48,10 +53,6 @@ function gameFunctions() {
   }
   askToPlayAgain(winnersName);
 }
-
-// function clearConsole() {
-//   if 
-// }
 
 function getUserChoice() {
   prompt(`Choose one: ${VALID_CHOICES.join(', ')}`);
@@ -97,21 +98,20 @@ function getComputersChoice() {
 }
 
 function declareRoundWinner(choice, computerChoice) {
-  console.clear();
   prompt(`You chose ${choice}, computer chose ${computerChoice}`);
   if (checkIfUserWinsRound(choice, computerChoice)) {
-    if (GAME_SCORE[0][1] < 3) {
+    if (GAME_SCORE.user < 3) {
       prompt('You win this round!');
     }
     return 'user';
   } else if (checkIfComputerWinsRound(choice, computerChoice)) {
-    if (GAME_SCORE[1][1] < 3) {
+    if (GAME_SCORE.computer < 3) {
       prompt('Computer wins this round!');
     }
     return 'computer';
   } else {
     prompt("It's a tie!");
-    if (GAME_SCORE[0][1] === 2 && GAME_SCORE[1][1] === 2) {
+    if (GAME_SCORE.user === 2 && GAME_SCORE.computer === 2) {
       prompt(`That was a close one, I'm sweating!`);
     }
     return 'tie';
@@ -128,16 +128,16 @@ function checkIfComputerWinsRound(choice, computerChoice) {
 
 function updateScore(roundWinner) {
   if (roundWinner === 'user') {
-    GAME_SCORE[0][1] += 1;
+    GAME_SCORE.user += 1;
   } else if (roundWinner === 'computer') {
-    GAME_SCORE[1][1] += 1;
+    GAME_SCORE.computer += 1;
   }
   printScore();
 }
 
 function printScore() {
-  let humanScore = GAME_SCORE[0][1];
-  let computerScore = GAME_SCORE[1][1];
+  let humanScore = GAME_SCORE.user;
+  let computerScore = GAME_SCORE.computer;
   if (humanScore === 2 && computerScore < humanScore && printCounter > 0) {
     prompt(`You've almost got this!`);
     printCounter -= 1;
@@ -150,9 +150,10 @@ function printScore() {
 }
 
 function checkIfThereIsAWinner(gameScore) {
-  let winner = gameScore.filter(subArray => subArray[1] === 3);
-  if (winner.length > 0) {
-    return winner[0][0];
+  if (GAME_SCORE.user === 3) {
+    return 'user';
+  } else if (GAME_SCORE.computer === 3) {
+    return 'computer';
   }
   return false;
 }
@@ -166,7 +167,7 @@ function declareGameWinner(winnersName) {
 }
 
 function isTheGameOver() {
-  if (GAME_SCORE[0][1] === 3 || GAME_SCORE[1][1] === 3) {
+  if (GAME_SCORE.user === 3 || GAME_SCORE.computer === 3) {
     return true;
   }
   return false;
@@ -202,8 +203,8 @@ function verifyYesOrNo(answer, winnersName) {
 }
 
 function resetGame() {
-  GAME_SCORE[0][1] = 0;
-  GAME_SCORE[1][1] = 0;
+  GAME_SCORE.user = 0;
+  GAME_SCORE.computer = 0;
   printCounter = 0;
   console.clear();
   gameFunctions();
